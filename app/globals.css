@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-aegean-50: #f4f8fc;
+  --color-aegean-100: #e7eff8;
+  --color-aegean-200: #c9dbf0;
+  --color-aegean-300: #9abce4;
+  --color-aegean-400: #6496d3;
+  --color-aegean-500: #1d5b9d;
+  --color-aegean-600: #0e4a86;
+  --color-aegean-700: #0c3c6f;
+  --color-aegean-800: #082a4e;
+  --color-aegean-900: #061e38;
+  --color-aegean-950: #030f1d;
+
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-outfit), var(--font-geist-sans), Arial, sans-serif;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0d2a4e;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #030f1d;
+  --foreground: #f4f8fc;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
