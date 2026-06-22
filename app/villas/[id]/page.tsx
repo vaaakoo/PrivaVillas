@@ -19,10 +19,12 @@ export default function VillaDetailPage() {
     phone: "",
     checkIn: "",
     checkOut: "",
+    guests: "2",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   if (!villa) {
     return (
@@ -50,20 +52,41 @@ export default function VillaDetailPage() {
     villa.id === "villa-alis" ? "/villa_3.png" : villa.id === "villa-thalassa" ? "/villa_1.png" : "/villa_2.png",
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
-    // Simulate concierge api check
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          propertyId: villa.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShowModal(true);
+      } else {
+        setErrorMessage(data.error || "Failed to submit booking request. Please check details.");
+      }
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      setErrorMessage("A network connectivity error occurred. Please check your connection and try again.");
+    } finally {
       setIsSubmitting(false);
-      setShowModal(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -340,6 +363,43 @@ export default function VillaDetailPage() {
                 </div>
               </div>
 
+              {/* Guests */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+                  Number of Guests
+                </label>
+                <div className="relative">
+                  <select
+                    name="guests"
+                    value={formData.guests}
+                    onChange={handleInputChange}
+                    className="w-full bg-slate-50 dark:bg-aegean-950 border border-slate-200 dark:border-aegean-800 rounded px-4 py-2.5 text-sm text-aegean-900 dark:text-aegean-50 focus:outline-none focus:ring-1 focus:ring-aegean-500 appearance-none cursor-pointer"
+                  >
+                    <option value="1">1 Guest</option>
+                    <option value="2">2 Guests</option>
+                    <option value="3">3 Guests</option>
+                    <option value="4">4 Guests</option>
+                    {villa.guests > 4 && (
+                      <>
+                        <option value="5">5 Guests</option>
+                        <option value="6">6 Guests</option>
+                      </>
+                    )}
+                    {villa.guests > 6 && (
+                      <>
+                        <option value="7">7 Guests</option>
+                        <option value="8">8 Guests</option>
+                      </>
+                    )}
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-aegean-500">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
               {/* Message */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
@@ -354,6 +414,13 @@ export default function VillaDetailPage() {
                   className="w-full bg-slate-50 dark:bg-aegean-950 border border-slate-200 dark:border-aegean-800 rounded px-4 py-2 text-sm text-aegean-900 dark:text-aegean-50 focus:outline-none focus:ring-1 focus:ring-aegean-500 resize-none"
                 />
               </div>
+
+              {/* Error Message */}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-2 border-red-500 rounded text-xs text-red-650 dark:text-red-300 font-light leading-relaxed">
+                  {errorMessage}
+                </div>
+              )}
 
               {/* Submit */}
               <button
@@ -399,7 +466,8 @@ export default function VillaDetailPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 font-light leading-relaxed mb-6">
               Thank you, <span className="font-semibold text-aegean-750 dark:text-aegean-300">{formData.name}</span>. 
               Our elite concierge team has received your check availability request for{" "}
-              <span className="font-semibold text-aegean-750 dark:text-aegean-300">{villa.name}</span> for the period{" "}
+              <span className="font-semibold text-aegean-750 dark:text-aegean-300">{villa.name}</span> for a party of{" "}
+              <span className="font-semibold text-aegean-750 dark:text-aegean-300">{formData.guests} guests</span> during the period{" "}
               <span className="font-semibold text-aegean-750 dark:text-aegean-300">{formData.checkIn}</span> to{" "}
               <span className="font-semibold text-aegean-750 dark:text-aegean-300">{formData.checkOut}</span>.
             </p>
